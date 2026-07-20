@@ -21,7 +21,7 @@ internal static class ExcelSelectionTools
     public static int TransformText(dynamic application, Func<string, string> transform)
     {
         dynamic range = RequireSingleAreaRange(application);
-        var (data, rowCount, columnCount) = ReadRange(range);
+        var (data, rowCount, columnCount) = ReadRange((object)range);
         var changed = 0;
 
         for (var row = 0; row < rowCount; row++)
@@ -47,7 +47,7 @@ internal static class ExcelSelectionTools
     public static int ConvertTextToDates(dynamic application, string numberFormat)
     {
         dynamic range = RequireSingleAreaRange(application);
-        var (data, rowCount, columnCount) = ReadRange(range);
+        var (data, rowCount, columnCount) = ReadRange((object)range);
         var converted = 0;
 
         for (var row = 0; row < rowCount; row++)
@@ -87,7 +87,7 @@ internal static class ExcelSelectionTools
         if (delimiter.Length == 0)
             throw new InvalidOperationException("Delimiter cannot be empty.");
 
-        var (source, rowCount, _) = ReadValues(range);
+        var (source, rowCount, _) = ReadValues((object)range);
         var rows = new string[rowCount][];
         var maximumParts = 1;
         for (var row = 0; row < rowCount; row++)
@@ -121,7 +121,7 @@ internal static class ExcelSelectionTools
         if (delimiterText is null)
             return 0;
 
-        var (source, rowCount, columnCount) = ReadValues(range);
+        var (source, rowCount, columnCount) = ReadValues((object)range);
         if (columnCount < 2)
             throw new InvalidOperationException("Select at least two columns before using Merge Text.");
 
@@ -154,7 +154,7 @@ internal static class ExcelSelectionTools
     public static int CreateUniqueValuesSheet(dynamic application)
     {
         dynamic range = RequireSingleAreaRange(application);
-        var (source, rowCount, columnCount) = ReadValues(range);
+        var (source, rowCount, columnCount) = ReadValues((object)range);
         var values = new List<string>();
         var seen = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
@@ -189,7 +189,7 @@ internal static class ExcelSelectionTools
     public static int RemoveBlankRows(dynamic application)
     {
         dynamic range = RequireSingleAreaRange(application);
-        var (source, rowCount, columnCount) = ReadRange(range);
+        var (source, rowCount, columnCount) = ReadRange((object)range);
         var blankRows = new List<int>();
 
         for (var row = 0; row < rowCount; row++)
