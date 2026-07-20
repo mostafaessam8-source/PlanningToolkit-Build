@@ -17,6 +17,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Rebuild project folders
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path `
+            "src\PlanningToolkit.Core", `
+            "src\PlanningToolkit.Infrastructure", `
+            "src\PlanningToolkit.Excel", `
+            "tests\PlanningToolkit.Tests", `
+            "docs" | Out-Null
+
+          $groups = @{
+            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "PlanningToolkit.Core.csproj")
+            "src\PlanningToolkit.Infrastructure" = @("AppPaths.cs", "FileAppLogger.cs", "IAppLogger.cs", "ISettingsStore.cs", "JsonSettingsStore.cs", "PlanningToolkit.Infrastructure.csproj")
+            "src\PlanningToolkit.Excel" = @("AddIn.cs", "AppServices.cs", "ExcelApplicationState.cs", "ExcelOperationRunner.cs", "ExcelSelectionTools.cs", "PlanningRibbon.cs", "PromptDialog.cs", "RibbonActions.cs", "SettingsForm.cs", "PlanningToolkit.Excel.csproj")
+            "tests\PlanningToolkit.Tests" = @("Program.cs", "PlanningToolkit.Tests.csproj")
+            "docs" = @("ROADMAP.md", "UserGuide.md", "VERIFICATION.md")
+          }
+
+          foreach ($destination in $groups.Keys) {
+            foreach ($file in $groups[$destination]) {
+              Move-Item $file "$destination\$file" -Force
+            }
+          }
+
       - name: Install .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -34,7 +58,7 @@ jobs:
       - name: Collect XLL
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path artifacts\windows -Force
+          New-Item -ItemType Directory -Path artifacts\windows -Force | Out-Null
           $root = "src\PlanningToolkit.Excel\bin\Release\net8.0-windows"
           $xll = Get-ChildItem $root -Recurse -Filter "*-packed.xll" | Select-Object -First 1
           if (-not $xll) {
@@ -49,75 +73,6 @@ jobs:
 
       - name: Upload Windows XLL
         uses: actions/upload-artifact@v4
-              - name: Rebuild project folders
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path `
-            "src\PlanningToolkit.Core", `
-            "src\PlanningToolkit.Infrastructure", `
-            "src\PlanningToolkit.Excel", `
-            "tests\PlanningToolkit.Tests", `
-            "docs" | Out-Null
-
-          $core = @(
-            "AppSettings.cs",
-            "DateParser.cs",
-            "TextTransforms.cs",
-            "PlanningToolkit.Core.csproj"
-          )
-
-          $infrastructure = @(
-            "AppPaths.cs",
-            "FileAppLogger.cs",
-            "IAppLogger.cs",
-            "ISettingsStore.cs",
-            "JsonSettingsStore.cs",
-            "PlanningToolkit.Infrastructure.csproj"
-          )
-
-          $excel = @(
-            "AddIn.cs",
-            "AppServices.cs",
-            "ExcelApplicationState.cs",
-            "ExcelOperationRunner.cs",
-            "ExcelSelectionTools.cs",
-            "PlanningRibbon.cs",
-            "PromptDialog.cs",
-            "RibbonActions.cs",
-            "SettingsForm.cs",
-            "PlanningToolkit.Excel.csproj"
-          )
-
-          $tests = @(
-            "Program.cs",
-            "PlanningToolkit.Tests.csproj"
-          )
-
-          $docs = @(
-            "ROADMAP.md",
-            "UserGuide.md",
-            "VERIFICATION.md"
-          )
-
-          foreach ($file in $core) {
-            Move-Item $file "src\PlanningToolkit.Core\$file" -Force
-          }
-
-          foreach ($file in $infrastructure) {
-            Move-Item $file "src\PlanningToolkit.Infrastructure\$file" -Force
-          }
-
-          foreach ($file in $excel) {
-            Move-Item $file "src\PlanningToolkit.Excel\$file" -Force
-          }
-
-          foreach ($file in $tests) {
-            Move-Item $file "tests\PlanningToolkit.Tests\$file" -Force
-          }
-
-          foreach ($file in $docs) {
-            Move-Item $file "docs\$file" -Force
-          }
         with:
           name: PlanningToolkit-Windows-x64-v0.1.0
           path: artifacts/windows
