@@ -1,0 +1,63 @@
+name: Build Windows XLL
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test 64-bit add-in
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore packages
+        run: dotnet restore .\PlanningToolkit.sln -p:Platform=x64
+
+      - name: Build Release x64
+        run: dotnet build .\PlanningToolkit.sln --configuration Release -p:Platform=x64 --no-restore
+
+      - name: Run Phase 1 tests
+        run: dotnet run --project .\tests\PlanningToolkit.Tests\PlanningToolkit.Tests.csproj --configuration Release --no-build
+
+      - name: Collect packed XLL
+        shell: pwsh
+        run: |
+          $output = Join-Path $PWD "artifacts\windows"
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          $buildRoot = Join-Path $PWD "src\PlanningToolkit.Excel\bin\Release\net8.0-windows"
+          $xll = Get-ChildItem $buildRoot -Recurse -File -Filter "*-packed.xll" | Select-Object -First 1
+          if (-not $xll) {
+            $xll = Get-ChildItem $buildRoot -Recurse -File -Filter "*.xll" |
+              Where-Object { $_.Name -match "64" } |
+              Select-Object -First 1
+          }
+          if (-not $xll) {
+            throw "Excel-DNA did not generate a 64-bit XLL."
+          }
+          Copy-Item $xll.FullName (Join-Path $output "PlanningToolkit-v0.1.0-x64.xll")
+          Copy-Item .\README.md $output
+          Copy-Item .\docs\UserGuide.md $output
+          Get-FileHash (Join-Path $output "PlanningToolkit-v0.1.0-x64.xll") -Algorithm SHA256 |
+            Format-List | Out-File (Join-Path $output "SHA256.txt")
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlanningToolkit-Windows-x64-v0.1.0
+          path: artifacts/windows
+          if-no-files-found: error
+          retention-days: 30

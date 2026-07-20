@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>PlanningToolkit.Tests</AssemblyName>
+    <RootNamespace>PlanningToolkit.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PlanningToolkit.Core\PlanningToolkit.Core.csproj" />
+    <ProjectReference Include="..\..\src\PlanningToolkit.Infrastructure\PlanningToolkit.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

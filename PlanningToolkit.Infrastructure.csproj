@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>PlanningToolkit.Infrastructure</AssemblyName>
+    <RootNamespace>PlanningToolkit.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningToolkit.Core\PlanningToolkit.Core.csproj" />
+  </ItemGroup>
+</Project>
+

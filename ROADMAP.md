@@ -1,0 +1,91 @@
+# خارطة تنفيذ Planning Toolkit
+
+سيتم تنفيذ الأداة كمنتج مستقل باسم **Planning Toolkit**، من دون نسخ أي كود أو علامة تجارية أو نظام ترخيص تابع لأداة أخرى.
+
+## المرحلة الأولى — الأساس وإضافة Excel
+
+الحالة: **تم التنفيذ في الإصدار 0.1.0**
+
+- إنشاء Visual Studio Solution قابل للتوسع.
+- إضافة Excel-DNA متوافقة مع Excel 64-bit.
+- إنشاء Ribbon باسم Planning Toolkit.
+- حماية حالة Excel وإعادة ScreenUpdating وEvents وCalculation وAlerts بعد كل أمر.
+- التسجيل في ملفات Log يومية.
+- إعدادات JSON قابلة للتعديل والتحقق.
+- أدوات النصوص والتواريخ والنطاقات الأساسية.
+- اختبارات آلية مستقلة عن Excel.
+
+معيار القبول: بناء الحل على Windows، تحميل ملف XLL، ظهور الـRibbon، نجاح الاختبارات، وتنفيذ الأدوات الأساسية على نطاق Excel محدد.
+
+## المرحلة الثانية — قراءة واستيراد XER
+
+- Parser عام لسجلات `%T`, `%F`, `%R`, `%E`.
+- دعم PROJECT وPROJWBS وTASK وTASKPRED وCALENDAR وRSRC وTASKRSRC والجداول المساندة.
+- الحفاظ على الجداول والحقول غير المعروفة.
+- استيراد XER إلى أوراق Excel منظمة.
+- تقرير Validation للأخطاء والتحذيرات.
+- اختبارات لملفات متعددة المشاريع والترميزات المختلفة والصفوف التالفة.
+
+معيار القبول: استيراد ملفات XER نموذجية من دون الحاجة إلى تثبيت Primavera، مع عدم فقد البيانات غير المدعومة.
+
+## المرحلة الثالثة — WBS وGantt Chart
+
+- اكتشاف مستويات WBS من XER أو بيانات منسوخة من P6.
+- تلوين وتجميع Outline مع Expand/Collapse.
+- تلخيص القيم حسب WBS.
+- Gantt يومي وأسبوعي وشهري ومخصص.
+- Baseline وCurrent وActual وRemaining وMilestones وData Date.
+- تحسين الأداء باستخدام قراءة وكتابة Range جماعية.
+
+معيار القبول: تنسيق 50,000 نشاط وإنشاء Gantt صحيح بالتواريخ والألوان والإعدادات المختارة.
+
+## المرحلة الرابعة — مقارنة تحديثات البرامج الزمنية
+
+- مقارنة Previous XER مع Current XER.
+- الأنشطة المضافة والمحذوفة والمعدلة.
+- تغييرات العلاقات والتواريخ والمدد والFloat والحالة والتقدم والتكلفة والوحدات والقيود والتقويمات.
+- Critical Path changes وNear-Critical activities.
+- Summary Dashboard وتقرير Excel مستقل.
+
+معيار القبول: عرض القيمة السابقة والحالية والفرق والتصنيف لكل تغيير، مع Tolerances قابلة للضبط.
+
+## المرحلة الخامسة — PMS وSchedule Health Check
+
+- إنشاء Progress Measurement System.
+- أوزان متساوية أو حسب التكلفة أو الوحدات أو الكميات أو المدة.
+- WBS roll-up حتى 100%.
+- Planned/Actual/Earned progress وSPI/CPI عند توفر البيانات.
+- فحص Open Ends وConstraints وLags وNegative Float وOut-of-Sequence وغيرها.
+- تحليل predecessors/successors والمسارات.
+
+معيار القبول: تطابق الأوزان والتجميعات، وتقديم تقرير مفصل قابل للتتبع لكل مشكلة.
+
+## المرحلة السادسة — تعديل وتصدير XER
+
+- تعديل حقول مسموح بها داخل Excel.
+- التحقق من IDs والمراجع والعلاقات وصيغ التاريخ والأرقام.
+- الحفاظ على الحقول والجداول غير المعدلة.
+- Backup تلقائي.
+- Round-trip: تصدير الملف ثم إعادة قراءته والتحقق منه داخليًا.
+
+معيار القبول: منع التصدير عند وجود أخطاء حرجة، وإعادة استيراد الملف الناتج بنجاح داخليًا.
+
+## المرحلة السابعة — الإصدار الإنتاجي
+
+- تحسين الأداء والذاكرة.
+- واجهة إنجليزية وعربية.
+- Installer وتوقيع رقمي اختياري.
+- دليل مستخدم كامل وملفات Sample مجهولة المصدر.
+- اختبارات تكامل على إصدارات Excel المستهدفة.
+- Release notes وKnown limitations.
+
+معيار القبول: حزمة تثبيت موثقة، واختبارها على Windows 10/11 وExcel 64-bit.
+
+## مرجع نطاق الوظائف
+
+الوظائف العامة التي ساعدت على تعريف النطاق مأخوذة من الصفحات العامة التالية، بينما التصميم والكود في هذا المشروع مستقلان:
+
+- [Plannex Excel Tool — public feature description](https://tool.plannexcg.com/)
+- [Public schedule comparison demonstration](https://www.linkedin.com/posts/mohamedaboadma_plannextool-primaverap6-xercomparison-activity-7348395319291711489-uR1B)
+- [Excel-DNA official documentation](https://excel-dna.github.io/)
+
