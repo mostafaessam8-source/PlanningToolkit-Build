@@ -59,7 +59,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts\windows -Force | Out-Null
-          $root = "src\PlanningToolkit.Excel\bin\Release\net8.0-windows"
+          $root = "src\PlanningToolkit.Excel\bin\x64\Release\net8.0-windows"
           $xll = Get-ChildItem $root -Recurse -Filter "*-packed.xll" | Select-Object -First 1
           if (-not $xll) {
             $xll = Get-ChildItem $root -Recurse -Filter "*.xll" |
