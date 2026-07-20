@@ -1,0 +1,54 @@
+name: Build Windows XLL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore .\PlanningToolkit.sln -p:Platform=x64
+
+      - name: Build
+        run: dotnet build .\PlanningToolkit.sln --configuration Release -p:Platform=x64 --no-restore
+
+      - name: Run tests
+        run: dotnet run --project .\tests\PlanningToolkit.Tests\PlanningToolkit.Tests.csproj --configuration Release --no-build
+
+      - name: Collect XLL
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts\windows -Force
+          $root = "src\PlanningToolkit.Excel\bin\Release\net8.0-windows"
+          $xll = Get-ChildItem $root -Recurse -Filter "*-packed.xll" | Select-Object -First 1
+          if (-not $xll) {
+            $xll = Get-ChildItem $root -Recurse -Filter "*.xll" |
+              Where-Object { $_.Name -match "64" } |
+              Select-Object -First 1
+          }
+          if (-not $xll) {
+            throw "64-bit XLL was not generated."
+          }
+          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.1.0-x64.xll"
+
+      - name: Upload Windows XLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlanningToolkit-Windows-x64-v0.1.0
+          path: artifacts/windows
