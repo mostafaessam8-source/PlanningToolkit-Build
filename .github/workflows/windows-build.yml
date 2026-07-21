@@ -40,7 +40,7 @@ jobs:
             "docs" | Out-Null
 
           $groups = @{
-            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "XerModels.cs", "XerParser.cs", "XerValidator.cs", "XerSerializer.cs", "XerEditService.cs", "XerRoundTripExporter.cs", "XerScheduleBuilder.cs", "XerScheduleComparer.cs", "XerProgressAnalyzer.cs", "PlanningToolkit.Core.csproj")
+            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "XerModels.cs", "XerParser.cs", "XerValidator.cs", "XerSerializer.cs", "XerEditService.cs", "XerRoundTripExporter.cs", "XerReportingPeriod.cs", "XerScheduleBuilder.cs", "XerScheduleComparer.cs", "XerProgressAnalyzer.cs", "PlanningToolkit.Core.csproj")
             "src\PlanningToolkit.Infrastructure" = @("AppPaths.cs", "FileAppLogger.cs", "IAppLogger.cs", "ISettingsStore.cs", "JsonSettingsStore.cs", "PlanningToolkit.Infrastructure.csproj")
             "src\PlanningToolkit.Excel" = @("AddIn.cs", "AppServices.cs", "ExcelApplicationState.cs", "ExcelOperationRunner.cs", "ExcelSelectionTools.cs", "XerExcelTools.cs", "XerExportTools.cs", "XerScheduleReport.cs", "XerComparisonReport.cs", "XerPmsReport.cs", "PlanningRibbon.cs", "PromptDialog.cs", "RibbonActions.cs", "SettingsForm.cs", "PlanningToolkit.Excel.csproj")
             "tests\PlanningToolkit.Tests" = @("Program.cs", "PlanningToolkit.Tests.csproj")
@@ -81,10 +81,10 @@ jobs:
           if (-not $xll) {
             throw "64-bit XLL was not generated."
           }
-          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.6.1-x64.xll"
+          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.6.2-x64.xll"
 
       - name: Upload Windows XLL
         uses: actions/upload-artifact@v4
         with:
-          name: PlanningToolkit-Windows-x64-v0.6.1
+          name: PlanningToolkit-Windows-x64-v0.6.2
           path: artifacts/windows
