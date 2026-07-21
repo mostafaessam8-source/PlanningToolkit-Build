@@ -79,10 +79,10 @@ jobs:
           if (-not $xll) {
             throw "64-bit XLL was not generated."
           }
-          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.5.0-x64.xll"
+          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.5.1-x64.xll"
 
       - name: Upload Windows XLL
         uses: actions/upload-artifact@v4
         with:
-          name: PlanningToolkit-Windows-x64-v0.5.0
+          name: PlanningToolkit-Windows-x64-v0.5.1
           path: artifacts/windows
