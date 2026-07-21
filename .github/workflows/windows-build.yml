@@ -20,7 +20,9 @@ jobs:
       - name: Rebuild project folders
         shell: pwsh
         run: |
-          if (Test-Path "PlanningToolkit-Phase4-Patch.zip") {
+          if (Test-Path "PlanningToolkit-Phase5-Patch.zip") {
+            Expand-Archive "PlanningToolkit-Phase5-Patch.zip" -DestinationPath "." -Force
+          } elseif (Test-Path "PlanningToolkit-Phase4-Patch.zip") {
             Expand-Archive "PlanningToolkit-Phase4-Patch.zip" -DestinationPath "." -Force
           } elseif (Test-Path "PlanningToolkit-Phase3-Patch.zip") {
             Expand-Archive "PlanningToolkit-Phase3-Patch.zip" -DestinationPath "." -Force
@@ -36,9 +38,9 @@ jobs:
             "docs" | Out-Null
 
           $groups = @{
-            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "XerModels.cs", "XerParser.cs", "XerValidator.cs", "XerScheduleBuilder.cs", "XerScheduleComparer.cs", "PlanningToolkit.Core.csproj")
+            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "XerModels.cs", "XerParser.cs", "XerValidator.cs", "XerScheduleBuilder.cs", "XerScheduleComparer.cs", "XerProgressAnalyzer.cs", "PlanningToolkit.Core.csproj")
             "src\PlanningToolkit.Infrastructure" = @("AppPaths.cs", "FileAppLogger.cs", "IAppLogger.cs", "ISettingsStore.cs", "JsonSettingsStore.cs", "PlanningToolkit.Infrastructure.csproj")
-            "src\PlanningToolkit.Excel" = @("AddIn.cs", "AppServices.cs", "ExcelApplicationState.cs", "ExcelOperationRunner.cs", "ExcelSelectionTools.cs", "XerExcelTools.cs", "XerScheduleReport.cs", "XerComparisonReport.cs", "PlanningRibbon.cs", "PromptDialog.cs", "RibbonActions.cs", "SettingsForm.cs", "PlanningToolkit.Excel.csproj")
+            "src\PlanningToolkit.Excel" = @("AddIn.cs", "AppServices.cs", "ExcelApplicationState.cs", "ExcelOperationRunner.cs", "ExcelSelectionTools.cs", "XerExcelTools.cs", "XerScheduleReport.cs", "XerComparisonReport.cs", "XerPmsReport.cs", "PlanningRibbon.cs", "PromptDialog.cs", "RibbonActions.cs", "SettingsForm.cs", "PlanningToolkit.Excel.csproj")
             "tests\PlanningToolkit.Tests" = @("Program.cs", "PlanningToolkit.Tests.csproj")
             "docs" = @("ROADMAP.md", "UserGuide.md", "VERIFICATION.md")
           }
@@ -77,10 +79,10 @@ jobs:
           if (-not $xll) {
             throw "64-bit XLL was not generated."
           }
-          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.4.2-x64.xll"
+          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.5.0-x64.xll"
 
       - name: Upload Windows XLL
         uses: actions/upload-artifact@v4
         with:
-          name: PlanningToolkit-Windows-x64-v0.4.2
+          name: PlanningToolkit-Windows-x64-v0.5.0
           path: artifacts/windows
