@@ -49,9 +49,9 @@ public static class XerValidator
         ValidateUniqueId(document, result, "RSRC", "rsrc_id");
 
         ValidateReference(document, result, "PROJWBS", "proj_id", "PROJECT", "proj_id", allowEmpty: false);
-        ValidateReference(document, result, "PROJWBS", "parent_wbs_id", "PROJWBS", "wbs_id", allowEmpty: true);
+        ValidateReference(document, result, "PROJWBS", "parent_wbs_id", "PROJWBS", "wbs_id", allowEmpty: true, missingSeverity: XerIssueSeverity.Warning);
         ValidateReference(document, result, "TASK", "proj_id", "PROJECT", "proj_id", allowEmpty: false);
-        ValidateReference(document, result, "TASK", "wbs_id", "PROJWBS", "wbs_id", allowEmpty: true);
+        ValidateReference(document, result, "TASK", "wbs_id", "PROJWBS", "wbs_id", allowEmpty: true, missingSeverity: XerIssueSeverity.Warning);
         ValidateReference(document, result, "TASK", "clndr_id", "CALENDAR", "clndr_id", allowEmpty: true);
         ValidateReference(document, result, "TASKPRED", "task_id", "TASK", "task_id", allowEmpty: false);
         ValidateReference(document, result, "TASKPRED", "pred_task_id", "TASK", "task_id", allowEmpty: false);
@@ -68,7 +68,8 @@ public static class XerValidator
         string childFieldName,
         string parentTableName,
         string parentFieldName,
-        bool allowEmpty)
+        bool allowEmpty,
+        XerIssueSeverity missingSeverity = XerIssueSeverity.Error)
     {
         var child = document.FindTable(childTableName);
         var parent = document.FindTable(parentTableName);
@@ -97,7 +98,7 @@ public static class XerValidator
                 continue;
             }
             if (!parentValues.Contains(value))
-                Add(result, XerIssueSeverity.Error, "REFERENCE_MISSING", $"{childFieldName} value '{value}' does not exist in {parentTableName}.{parentFieldName}.", childTableName, row.LineNumber);
+                Add(result, missingSeverity, "REFERENCE_MISSING", $"{childFieldName} value '{value}' does not exist in {parentTableName}.{parentFieldName}.", childTableName, row.LineNumber);
         }
     }
 
