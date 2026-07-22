@@ -13,15 +13,16 @@ public sealed class PlanningRibbon : ExcelRibbon
             <tabs>
               <tab id="planningToolkitTab" label="Planning Toolkit">
                 <group id="xerGroup" label="XER Operations">
-                  <button id="importXer" label="Import XER (Phase 2)" imageMso="ImportTextFile" size="large" enabled="false" />
-                  <button id="validateXer" label="Validate XER (Phase 2)" imageMso="ReviewProtectWorkbook" enabled="false" />
-                  <button id="exportXer" label="Export XER (Phase 6)" imageMso="ExportExcel" enabled="false" />
+                  <button id="importXer" label="Import XER" imageMso="ImportTextFile" size="large" onAction="OnImportXer" screentip="Import every XER table into a new Excel workbook." />
+                  <button id="validateXer" label="Validate XER" imageMso="ReviewProtectWorkbook" onAction="OnValidateXer" screentip="Check XER structure, row widths and key identifiers." />
+                  <button id="exportXer" label="Export XER" imageMso="ExportExcel" size="large" onAction="OnExportXer" screentip="Export safe worksheet edits to a validated XER with automatic backup and round-trip verification." />
                 </group>
                 <group id="scheduleGroup" label="Schedule Tools">
-                  <button id="formatWbs" label="WBS Tools (Phase 3)" imageMso="GroupRows" size="large" enabled="false" />
-                  <button id="createGantt" label="Gantt Chart (Phase 3)" imageMso="ChartTypeBarInsertGallery" size="large" enabled="false" />
-                  <button id="compareXer" label="Compare XER (Phase 4)" imageMso="ReviewCompareTwoVersions" size="large" enabled="false" />
-                  <button id="createPms" label="Create PMS (Phase 5)" imageMso="PivotTableInsert" enabled="false" />
+                  <button id="formatWbs" label="Build WBS Schedule" imageMso="GroupRows" size="large" onAction="OnBuildSchedule" screentip="Create a grouped WBS schedule with summary rows and critical path." />
+                  <button id="createGantt" label="Create Gantt Chart" imageMso="ChartTypeBarInsertGallery" size="large" onAction="OnBuildSchedule" screentip="Create the WBS schedule and weekly Gantt chart from an XER file." />
+                  <button id="compareXer" label="Compare Baseline / Update" imageMso="ReviewCompareTwoVersions" size="large" onAction="OnCompareXer" screentip="Compare a baseline XER against an updated XER." />
+                  <button id="createPms" label="Create PMS Dashboard" imageMso="PivotTableInsert" onAction="OnCreatePms" screentip="Create dashboard, S-curve, look-ahead and critical path from baseline and update XER files." />
+                  <button id="exportReportPdf" label="Export Report as PDF" imageMso="FileSaveAsPdfOrXps" onAction="OnExportReportPdf" screentip="Export the active Planning Toolkit report workbook to a single branded, print-ready PDF." />
                 </group>
                 <group id="textGroup" label="Text &amp; Data">
                   <button id="fillDown" label="Fill Down" imageMso="FillDown" onAction="OnFillDown" screentip="Fill the first selected row down through the selection." />
@@ -54,6 +55,13 @@ public sealed class PlanningRibbon : ExcelRibbon
         """;
 
     public void OnFillDown(IRibbonControl control) => RibbonActions.FillDown();
+    public void OnImportXer(IRibbonControl control) => RibbonActions.ImportXer();
+    public void OnExportXer(IRibbonControl control) => RibbonActions.ExportXer();
+    public void OnValidateXer(IRibbonControl control) => RibbonActions.ValidateXer();
+    public void OnBuildSchedule(IRibbonControl control) => RibbonActions.BuildSchedule();
+    public void OnCompareXer(IRibbonControl control) => RibbonActions.CompareXer();
+    public void OnCreatePms(IRibbonControl control) => RibbonActions.CreatePms();
+    public void OnExportReportPdf(IRibbonControl control) => RibbonActions.ExportReportPdf();
     public void OnTrimSpaces(IRibbonControl control) => RibbonActions.TrimSpaces();
     public void OnCleanText(IRibbonControl control) => RibbonActions.CleanText();
     public void OnUpperCase(IRibbonControl control) => RibbonActions.UpperCase();

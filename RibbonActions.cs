@@ -9,6 +9,90 @@ namespace PlanningToolkit.Excel;
 
 internal static class RibbonActions
 {
+    public static void CreatePms() => ExcelOperationRunner.Run("Create PMS Dashboard", application =>
+    {
+        var baselinePath = XerExcelTools.SelectXerFile("Select BASELINE XER for PMS (1 of 2)");
+        if (baselinePath is null)
+            return;
+        var updatePath = XerExcelTools.SelectXerFile("Select UPDATE XER for PMS (2 of 2)");
+        if (updatePath is null)
+            return;
+        if (string.Equals(baselinePath, updatePath, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Select two different XER files: baseline first, then update.");
+        var lookAheadWeeks = SelectLookAheadWeeks();
+        if (!lookAheadWeeks.HasValue)
+            return;
+        var result = XerPmsReport.Create((object)application, baselinePath, updatePath, lookAheadWeeks.Value);
+        ShowCompleted($"PMS Dashboard created. Planned: {result.Planned:P1}, Actual: {result.Actual:P1}, SPI: {result.Spi:N2}, {lookAheadWeeks}-week Look Ahead: {result.LookAhead:N0}, Critical: {result.Critical:N0}.");
+    });
+
+    public static void CompareXer() => ExcelOperationRunner.Run("Compare Baseline and Update XER", application =>
+    {
+        var baselinePath = XerExcelTools.SelectXerFile("Select BASELINE XER file (1 of 2)");
+        if (baselinePath is null)
+            return;
+        var updatePath = XerExcelTools.SelectXerFile("Select UPDATE XER file (2 of 2)");
+        if (updatePath is null)
+            return;
+        if (string.Equals(baselinePath, updatePath, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Select two different XER files: baseline first, then update.");
+        var result = XerComparisonReport.Create((object)application, baselinePath, updatePath);
+        ShowCompleted($"Compared {result.Activities:N0} activities. Delayed: {result.Delayed:N0}, added: {result.Added:N0}, deleted: {result.Deleted:N0}. Project finish variance: {result.FinishVariance:N1} day(s).");
+    });
+
+    public static void BuildSchedule() => ExcelOperationRunner.Run("Build WBS Schedule", application =>
+    {
+        var path = XerExcelTools.SelectXerFile();
+        if (path is null)
+            return;
+        var result = XerScheduleReport.Create((object)application, path);
+        ShowCompleted($"Created WBS Schedule and Gantt Chart for {result.Activities:N0} activities, {result.WbsLevels:N0} WBS level(s), including {result.CriticalActivities:N0} critical activities.");
+    });
+
+    public static void ImportXer() => ExcelOperationRunner.Run("Import XER", application =>
+    {
+        var path = XerExcelTools.SelectXerFile();
+        if (path is null)
+            return;
+        var result = XerExcelTools.Import((object)application, path);
+        ShowCompleted($"Imported {result.Tables:N0} table(s) and {result.Rows:N0} row(s) into a new workbook.");
+    });
+
+    public static void ExportXer() => ExcelOperationRunner.Run("Export XER", application =>
+    {
+        var result = XerExportTools.ExportActiveWorkbook(application);
+        if (result is null)
+            return;
+        var editedTables = result.EditedTables.Count == 0
+            ? "No editable values changed"
+            : $"Edited tables: {string.Join(", ", result.EditedTables)}";
+        ShowCompleted(
+            $"Validated XER exported successfully.\n\n" +
+            $"File: {result.OutputPath}\n" +
+            $"Tables: {result.Tables:N0}, rows: {result.Rows:N0}, edited cells: {result.EditedCells:N0}\n" +
+            $"{editedTables}\n" +
+            $"Automatic backup(s): {result.BackupPaths.Count:N0}");
+    });
+
+    public static void ExportReportPdf() => ExcelOperationRunner.Run("Export Report as PDF", application =>
+    {
+        var outputPath = XerReportExport.ExportActiveWorkbookToPdf((object)application);
+        if (outputPath is null)
+            return;
+        ShowCompleted($"Report exported to PDF.\n\nFile: {outputPath}");
+    });
+
+    public static void ValidateXer() => ExcelOperationRunner.Run("Validate XER", application =>
+    {
+        var path = XerExcelTools.SelectXerFile();
+        if (path is null)
+            return;
+        var result = XerExcelTools.ValidateToWorkbook((object)application, path);
+        ShowCompleted(result.IsValid
+            ? $"XER is valid. Found {result.WarningCount:N0} warning(s)."
+            : $"XER is invalid. Found {result.ErrorCount:N0} error(s) and {result.WarningCount:N0} warning(s). See the validation workbook.");
+    });
+
     public static void FillDown() => ExcelOperationRunner.Run("Fill Down", application =>
     {
         ExcelSelectionTools.FillDown(application);
@@ -113,12 +197,34 @@ internal static class RibbonActions
     }
 
     public static void ShowAbout() => MessageBox.Show(
-        "Planning Toolkit\nVersion 0.1.0 — Phase 1\n\n" +
-        "Independent Excel productivity foundation for project controls.\n" +
-        "XER, WBS, Gantt, comparison and PMS modules are scheduled for later phases.",
+        "Planning Toolkit\nVersion 0.7.0 — Phase 6 + Professional Report Theme\n\n" +
+        "Primavera XER import/edit/export, WBS/Gantt, comparison, PMS dashboard, S-curve, look-ahead and critical path toolkit.\n" +
+        "Export XER includes read-only ID protection, backups, validation and exact round-trip verification.\n" +
+        "All reports share a single branded theme (ReportTheme.cs): consistent fonts, colors, borders, print setup and one-click PDF export.",
         "About Planning Toolkit",
         MessageBoxButtons.OK,
         MessageBoxIcon.Information);
+
+    private static int? SelectLookAheadWeeks()
+    {
+        while (true)
+        {
+            var value = PromptDialog.Show(
+                "Look Ahead Period",
+                "Enter the Look Ahead duration in weeks (1 to 52):",
+                "2");
+            if (value is null)
+                return null;
+            if (int.TryParse(value.Trim(), out var weeks) && weeks is >= 1 and <= 52)
+                return weeks;
+
+            MessageBox.Show(
+                "Enter a whole number between 1 and 52.",
+                "Planning Toolkit",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+    }
 
     private static void RunTextTransform(string commandName, Func<string, string> transform) =>
         ExcelOperationRunner.Run(commandName, application =>
@@ -139,4 +245,3 @@ internal static class RibbonActions
         MessageBoxButtons.OK,
         MessageBoxIcon.Error);
 }
-

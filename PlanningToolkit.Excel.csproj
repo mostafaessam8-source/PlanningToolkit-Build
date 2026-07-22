@@ -8,8 +8,8 @@
     <RootNamespace>PlanningToolkit.Excel</RootNamespace>
     <Product>Planning Toolkit</Product>
     <Company>Independent Project Controls Tools</Company>
-    <Version>0.1.0</Version>
-    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.7.0</Version>
+    <FileVersion>0.7.0.0</FileVersion>
     <ExcelDnaCreate32BitAddIn>false</ExcelDnaCreate32BitAddIn>
     <ExcelDnaCreate64BitAddIn>true</ExcelDnaCreate64BitAddIn>
     <ExcelDnaPackCompressResources>false</ExcelDnaPackCompressResources>

@@ -3,61 +3,82 @@ name: Build Windows XLL
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   build:
-    name: Build and test 64-bit add-in
     runs-on: windows-latest
     timeout-minutes: 20
 
     steps:
-      - name: Check out source
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install .NET 8 SDK
+      - name: Rebuild project folders
+        shell: pwsh
+        run: |
+          # NOTE: as of v0.7.0 the repository root already contains the final, current
+          # source files directly (including ReportTheme.cs and XerReportExport.cs), so
+          # this step no longer expands any PlanningToolkit-PhaseN-Patch.zip. If you still
+          # keep old patch zips in the repo for history, leave them zipped -- expanding an
+          # old patch here would silently overwrite the current themed files with stale ones.
+
+          New-Item -ItemType Directory -Force -Path `
+            "src\PlanningToolkit.Core", `
+            "src\PlanningToolkit.Infrastructure", `
+            "src\PlanningToolkit.Excel", `
+            "tests\PlanningToolkit.Tests", `
+            "docs" | Out-Null
+
+          $groups = @{
+            "src\PlanningToolkit.Core" = @("AppSettings.cs", "DateParser.cs", "TextTransforms.cs", "XerModels.cs", "XerParser.cs", "XerValidator.cs", "XerSerializer.cs", "XerEditService.cs", "XerRoundTripExporter.cs", "XerScheduleBuilder.cs", "XerScheduleComparer.cs", "XerProgressAnalyzer.cs", "PlanningToolkit.Core.csproj")
+            "src\PlanningToolkit.Infrastructure" = @("AppPaths.cs", "FileAppLogger.cs", "IAppLogger.cs", "ISettingsStore.cs", "JsonSettingsStore.cs", "PlanningToolkit.Infrastructure.csproj")
+            "src\PlanningToolkit.Excel" = @("AddIn.cs", "AppServices.cs", "ExcelApplicationState.cs", "ExcelOperationRunner.cs", "ExcelSelectionTools.cs", "XerExcelTools.cs", "XerExportTools.cs", "XerScheduleReport.cs", "XerComparisonReport.cs", "XerPmsReport.cs", "ReportTheme.cs", "XerReportExport.cs", "PlanningRibbon.cs", "PromptDialog.cs", "RibbonActions.cs", "SettingsForm.cs", "PlanningToolkit.Excel.csproj")
+            "tests\PlanningToolkit.Tests" = @("Program.cs", "PlanningToolkit.Tests.csproj")
+            "docs" = @("ROADMAP.md", "UserGuide.md", "VERIFICATION.md")
+          }
+
+          foreach ($destination in $groups.Keys) {
+            foreach ($file in $groups[$destination]) {
+              Move-Item $file "$destination\$file" -Force
+            }
+          }
+
+      - name: Install .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore packages
+      - name: Restore
         run: dotnet restore .\PlanningToolkit.sln -p:Platform=x64
 
-      - name: Build Release x64
+      - name: Build
         run: dotnet build .\PlanningToolkit.sln --configuration Release -p:Platform=x64 --no-restore
 
-      - name: Run Phase 1 tests
+      - name: Run tests
         run: dotnet run --project .\tests\PlanningToolkit.Tests\PlanningToolkit.Tests.csproj --configuration Release --no-build
 
-      - name: Collect packed XLL
+      - name: Collect XLL
         shell: pwsh
         run: |
-          $output = Join-Path $PWD "artifacts\windows"
-          New-Item -ItemType Directory -Path $output -Force | Out-Null
-          $buildRoot = Join-Path $PWD "src\PlanningToolkit.Excel\bin\Release\net8.0-windows"
-          $xll = Get-ChildItem $buildRoot -Recurse -File -Filter "*-packed.xll" | Select-Object -First 1
+          New-Item -ItemType Directory -Path artifacts\windows -Force | Out-Null
+          $root = "src\PlanningToolkit.Excel\bin\x64\Release\net8.0-windows"
+          $xll = Get-ChildItem $root -Recurse -Filter "*-packed.xll" | Select-Object -First 1
           if (-not $xll) {
-            $xll = Get-ChildItem $buildRoot -Recurse -File -Filter "*.xll" |
+            $xll = Get-ChildItem $root -Recurse -Filter "*.xll" |
               Where-Object { $_.Name -match "64" } |
               Select-Object -First 1
           }
           if (-not $xll) {
-            throw "Excel-DNA did not generate a 64-bit XLL."
+            throw "64-bit XLL was not generated."
           }
-          Copy-Item $xll.FullName (Join-Path $output "PlanningToolkit-v0.1.0-x64.xll")
-          Copy-Item .\README.md $output
-          Copy-Item .\docs\UserGuide.md $output
-          Get-FileHash (Join-Path $output "PlanningToolkit-v0.1.0-x64.xll") -Algorithm SHA256 |
-            Format-List | Out-File (Join-Path $output "SHA256.txt")
+          Copy-Item $xll.FullName "artifacts\windows\PlanningToolkit-v0.7.0-x64.xll"
 
-      - name: Upload Windows package
+      - name: Upload Windows XLL
         uses: actions/upload-artifact@v4
         with:
-          name: PlanningToolkit-Windows-x64-v0.1.0
+          name: PlanningToolkit-Windows-x64-v0.7.0
           path: artifacts/windows
-          if-no-files-found: error
-          retention-days: 30

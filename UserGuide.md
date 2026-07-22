@@ -1,8 +1,22 @@
-# Planning Toolkit — Phase 1 User Guide
+# Planning Toolkit — Phase 6 User Guide
 
 ## Ribbon Status
 
-The **Planning Toolkit** tab contains active Phase 1 commands and disabled placeholders for upcoming modules. A disabled button is intentional and identifies the phase in which that module will be implemented.
+The **Planning Toolkit** tab contains XER import, validation, safe export, WBS/Gantt, comparison, PMS and Excel data tools.
+
+## Import, Edit and Export XER
+
+1. Click **Import XER** and select the original Primavera XER file.
+2. Save the generated Excel workbook before making changes.
+3. Editable XER headers and cells are highlighted in pale yellow/blue. Gray headers are read-only identifiers, references or unsupported fields.
+4. Edit permitted values without inserting/deleting rows or columns and without renaming worksheets or XER headers.
+5. Click **Export XER**, choose the output `.xer` name, then wait for the success message.
+
+Version 0.6.0 permits common project, WBS, activity, relationship, resource assignment, resource, calendar, activity-code and UDF value edits. IDs and references remain read-only. Adding or deleting XER records is intentionally blocked in this version.
+
+Before writing the final file, Planning Toolkit checks worksheet structure, read-only values, date and numeric formats, percentage limits, unique IDs, project/WBS/activity/resource/calendar references and self-predecessors. It creates an automatic source backup, writes to a temporary file, re-imports the generated XER and verifies that every table, field and value survived the round trip exactly. Export is stopped when a critical check fails.
+
+Keep the original XER file available at the path shown in **XER Summary**. If it was moved, Export XER asks you to select it again. Unknown and unsupported XER tables are preserved from that original file.
 
 ## Text & Data Commands
 
@@ -48,6 +62,16 @@ Finds rows that are blank across the selected columns. After confirmation, the c
 
 Settings include date format, currency, working hours, schedule thresholds, planned future Gantt/WBS colors, output folder, calculation behavior and logging level. Settings are validated before being saved.
 
+## PMS Dashboard and Look Ahead
+
+Select the Baseline XER and then the Update XER. Planning Toolkit asks for the Look Ahead duration in whole weeks from 1 to 52; the default is 2 weeks.
+
+The generated Look Ahead, Critical Path and WBS Progress worksheets use the XER WBS hierarchy. Bold WBS subtotal rows roll up all descendant activities. Use Excel's outline controls to expand or collapse each WBS group and show activity-level detail.
+
+The WBS Progress subtotals contain activity count, baseline cost, planned and actual percentages, variance, delayed count, critical count and maximum finish variance.
+
+Planned progress uses the Update data date against each activity's Baseline target start and finish dates. Project and WBS roll-ups use Baseline budgeted cost from TASKRSRC and PROJCOST. If no valid Baseline cost exists, the report explicitly identifies a duration-weighted fallback.
+
 ## Logs
 
 Use **View Logs** to open the local diagnostics folder. Logs contain command names and technical exceptions; the current phase does not deliberately write workbook cell contents to logs.
@@ -55,4 +79,3 @@ Use **View Logs** to open the local diagnostics folder. Logs contain command nam
 ## Safety Behavior
 
 Before each worksheet command, Planning Toolkit temporarily disables screen updating, events, alerts and automatic calculation. Their original values are restored after success or failure. Destructive actions require confirmation.
-

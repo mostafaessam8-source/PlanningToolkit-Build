@@ -7,7 +7,7 @@ internal sealed class ExcelApplicationState : IDisposable
     private readonly bool _screenUpdating;
     private readonly bool _enableEvents;
     private readonly bool _displayAlerts;
-    private readonly int _calculation;
+    private readonly int? _calculation;
     private readonly object? _statusBar;
     private readonly string _calculationBehavior;
     private bool _disposed;
@@ -18,14 +18,27 @@ internal sealed class ExcelApplicationState : IDisposable
         _screenUpdating = application.ScreenUpdating;
         _enableEvents = application.EnableEvents;
         _displayAlerts = application.DisplayAlerts;
-        _calculation = application.Calculation;
+        _calculation = null;
         _statusBar = application.StatusBar;
         _calculationBehavior = calculationBehavior;
 
         application.ScreenUpdating = false;
         application.EnableEvents = false;
         application.DisplayAlerts = false;
-        application.Calculation = CalculationManual;
+        try
+        {
+            if ((int)application.Workbooks.Count > 0)
+            {
+                _calculation = (int)application.Calculation;
+                application.Calculation = CalculationManual;
+            }
+        }
+        catch
+        {
+            // Excel can reject Calculation changes when no workbook is open,
+            // during cell edit mode, or while another add-in controls calculation.
+            _calculation = null;
+        }
         application.StatusBar = statusMessage;
     }
 
@@ -34,12 +47,13 @@ internal sealed class ExcelApplicationState : IDisposable
         if (_disposed)
             return;
 
-        TryRestore(() => _application.Calculation = _calculationBehavior switch
-        {
-            "KeepAutomatic" => -4105,
-            "KeepManual" => CalculationManual,
-            _ => _calculation
-        });
+        if (_calculation.HasValue)
+            TryRestore(() => _application.Calculation = _calculationBehavior switch
+            {
+                "KeepAutomatic" => -4105,
+                "KeepManual" => CalculationManual,
+                _ => _calculation.Value
+            });
         TryRestore(() => _application.DisplayAlerts = _displayAlerts);
         TryRestore(() => _application.EnableEvents = _enableEvents);
         TryRestore(() => _application.ScreenUpdating = _screenUpdating);
